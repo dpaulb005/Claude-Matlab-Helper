@@ -1,5 +1,5 @@
 function matlab_code_assist_start_bridge()
-%MATLAB_CODE_ASSIST_START_BRIDGE Start the local Codex bridge from MATLAB.
+%MATLAB_CODE_ASSIST_START_BRIDGE Start the local Claude bridge from MATLAB.
 
 if localBridgeIsReachable()
     fprintf("MATLAB Code Assist bridge is already running.\n");
@@ -17,7 +17,7 @@ if ~isfile(scriptPath)
         "Could not find start_bridge.py at %s.", scriptPath);
 end
 
-command = localBuildLaunchCommand(scriptPath, logPath);
+command = localBuildLaunchCommand(projectDir, scriptPath, logPath);
 [status, output] = system(command);
 
 if status ~= 0
@@ -40,22 +40,29 @@ catch
 end
 end
 
-function command = localBuildLaunchCommand(scriptPath, logPath)
+function command = localBuildLaunchCommand(projectDir, scriptPath, logPath)
 if ispc
-    [pythonExecutable, pythonArgs] = localDetectWindowsPythonCommand();
+    [pythonExecutable, pythonArgs] = localDetectWindowsPythonCommand(projectDir);
     if strlength(pythonArgs) > 0
         pythonArgs = " " + pythonArgs;
     end
     command = sprintf('start "" /B cmd /C ""%s"%s "%s" > "%s" 2>&1""', ...
         pythonExecutable, pythonArgs, scriptPath, logPath);
 else
-    pythonCommand = localDetectUnixPythonCommand();
+    pythonCommand = localDetectUnixPythonCommand(projectDir);
     command = sprintf('nohup %s "%s" > "%s" 2>&1 &', ...
         pythonCommand, scriptPath, logPath);
 end
 end
 
-function [pythonExecutable, pythonArgs] = localDetectWindowsPythonCommand()
+function [pythonExecutable, pythonArgs] = localDetectWindowsPythonCommand(projectDir)
+venvPython = fullfile(projectDir, '.venv', 'Scripts', 'python.exe');
+if isfile(venvPython)
+    pythonExecutable = string(venvPython);
+    pythonArgs = "";
+    return;
+end
+
 candidates = {
     struct("command", "py -3 --version", "executable", "py", "args", "-3")
     struct("command", "python --version", "executable", "python", "args", "")
@@ -74,7 +81,13 @@ error("matlab_code_assist_start_bridge:PythonNotFound", ...
     "Could not find a usable Python launcher. Install Python 3 or make 'py -3' available.");
 end
 
-function pythonCommand = localDetectUnixPythonCommand()
+function pythonCommand = localDetectUnixPythonCommand(projectDir)
+venvPython = fullfile(projectDir, '.venv', 'bin', 'python');
+if isfile(venvPython)
+    pythonCommand = sprintf('"%s"', venvPython);
+    return;
+end
+
 candidates = {"python3", "python"};
 
 for index = 1:numel(candidates)

@@ -8,11 +8,16 @@ PROJECT_DIR = Path(__file__).resolve().parent.parent
 DIST_DIR = PROJECT_DIR / "dist"
 EXCLUDED_NAMES = {
     ".DS_Store",
+    ".env",
 }
 EXCLUDED_DIR_NAMES = {
+    ".git",
+    ".venv",
+    ".pytest_cache",
     "__pycache__",
-    "state",
     "dist",
+    "slprj",
+    "state",
 }
 EXCLUDED_PARTS = {
     "notes/rendered",
@@ -49,15 +54,18 @@ def iter_files():
 
 
 def main():
-    bundle_name = sys.argv[1] if len(sys.argv) > 1 else "matlab-code-assist-portable.zip"
+    bundle_name = sys.argv[1] if len(sys.argv) > 1 else "claude-matlab-helper-portable.zip"
     DIST_DIR.mkdir(parents=True, exist_ok=True)
     bundle_path = DIST_DIR / bundle_name
+    bundle_root = bundle_path.stem
 
     with zipfile.ZipFile(bundle_path, "w", compression=zipfile.ZIP_DEFLATED) as archive:
         for path in iter_files():
-            archive.write(path, path.relative_to(PROJECT_DIR))
+            archive_path = Path(bundle_root) / path.relative_to(PROJECT_DIR)
+            archive.write(path, archive_path)
 
     print(f"Wrote portable bundle: {bundle_path}")
+    print(f"Bundle root folder inside zip: {bundle_root}/")
 
 
 if __name__ == "__main__":

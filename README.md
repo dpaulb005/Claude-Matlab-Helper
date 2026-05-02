@@ -1,197 +1,402 @@
-# MATLAB Code Assist
+# Claude MATLAB Helper
 
-This project is a portable desktop MATLAB workflow powered by a small local Codex bridge. The folder is organized so the root stays clean and the project is easy to zip, move to another machine, unzip, and use on macOS, Linux, or Windows.
+Claude MATLAB Helper is a desktop MATLAB workflow that lets MATLAB send context to a small local Python bridge, which then calls Claude and returns either:
+- a concise answer in the MATLAB Command Window, or
+- MATLAB code for the active editor
 
-## What It Does
+This repo is designed to be portable, especially for Windows:
+- build a clean zip bundle
+- move it to another machine
+- unzip it
+- run one batch file
+- start working in MATLAB
 
-- Runs a small local HTTP bridge that shells out to `codex exec`.
-- Lets desktop MATLAB send the current editor context to that bridge.
-- Returns concise answers in the Command Window and MATLAB code when editor output is requested.
-- Uses your local Codex login instead of storing an API key in MATLAB.
-- Keeps runtime logs and transcript capture outside the project folder so the bundle stays cleaner.
-- Includes a portable bundle script and both shell and Windows launchers.
+Important: despite some older file names like `codex_bridge.py`, the current implementation in this repo uses the Anthropic Python SDK and an `ANTHROPIC_API_KEY`.
 
-## Folder Layout
+## What the script does
 
-- `matlab/`: all MATLAB helper commands and integration code
-- `bridge/`: the local HTTP bridge and cross-platform launchers
-- `tools/`: note-ingestion and bundle-building utilities
-- `notes/`: your bundled source notes, extracted text, and manifest
-- `dist/`: generated zip bundles
-- `matlab_code_assist_setup.m`: root bootstrap entry point for MATLAB
+At a high level, this project gives MATLAB an AI helper with local context.
 
-Things that are generated outside the unzipped project:
+It does the following:
+1. starts a local HTTP bridge on `http://127.0.0.1:8765`
+2. reads the current MATLAB editor contents and recent command-window context
+3. optionally pulls in local course notes from `notes/manifest.json`
+4. sends the assembled prompt to Claude
+5. returns either:
+   - a short plain-text explanation, or
+   - MATLAB code to paste into the editor
 
-- bridge logs
-- Command Window transcript capture
-- Python bytecode cache
+It is meant for desktop MATLAB workflows like:
+- asking theory questions in the Command Window
+- generating MATLAB functions/snippets
+- keeping problem-by-problem context with `lrn(...)`
+- grounding answers in bundled class notes
 
-That means you can zip this folder without carrying session junk from one machine to another.
+## Main user-facing commands in MATLAB
 
-## Quick Start
+After setup, the most important commands are:
 
-After unzipping this folder on a machine:
+- `matlab_code_assist_setup` — bootstrap the project inside MATLAB
+- `lrn("your prompt")` — preferred study / question interface
+- `clr` — instant prerecorded MATLAB snippet
+- `matlab_code_assist("editor")` — generate code into the current editor
+- `matlab_code_assist("command")` — print the response in the Command Window
 
-1. Make sure `codex` is installed or available through the OpenAI VS Code/Cursor extension on that machine.
-2. Open MATLAB.
-3. Change MATLAB's current folder to this unzipped project.
-4. Run:
+Examples:
+
+```matlab
+lrn("What does BIBO stability mean?")
+lrn("Explain convolution intuitively")
+lrn("write a function that computes RMS", "editor")
+clr
+```
+
+## Repo layout
+
+- `matlab/` — MATLAB helper functions and bridge integration
+- `bridge/` — local Python HTTP bridge and bridge launchers
+- `tools/` — bundle builder and note-ingestion utilities
+- `notes/` — bundled notes, extracted text, and note manifest
+- `matlab_code_assist_setup.m` — top-level MATLAB bootstrap entry point
+- `RUN_WINDOWS_PORTABLE.bat` — one-click Windows portable launcher
+- `setup.bat` — wrapper that calls `RUN_WINDOWS_PORTABLE.bat`
+
+## Requirements
+
+## Windows portable use
+
+For the Windows portable flow, the target machine needs:
+- Windows
+- MATLAB desktop installed
+- Python 3 installed
+- internet access for pip install on first run
+- a Claude / Anthropic API key
+
+The portable launcher will handle:
+- creating a local `.venv`
+- installing `requirements.txt`
+- saving `ANTHROPIC_API_KEY` into `.env` if needed
+- starting the local bridge
+- checking bridge health
+- trying to open MATLAB in the project folder automatically
+
+## Python packages used by the bridge
+
+From `requirements.txt`:
+- `anthropic`
+- `pymupdf`
+- `pypdf`
+
+## Windows portable: step-by-step
+
+This is the main workflow you asked for.
+
+## On the machine where you build the portable zip
+
+From the repo root:
+
+```bash
+python3 tools/make_portable_bundle.py
+```
+
+This creates:
+
+```text
+dist/claude-matlab-helper-portable.zip
+```
+
+The bundle script now excludes junk like:
+- `.git`
+- `.venv`
+- `__pycache__`
+- `slprj`
+- `dist`
+- rendered note pages and other runtime clutter
+
+The zip also contains a single root folder so it extracts cleanly.
+
+## On the Windows machine where you want to use it
+
+### Step 1 — Unzip the bundle
+
+Right-click the zip and extract it anywhere you have normal write access, for example:
+
+```text
+C:\Users\YourName\Desktop\claude-matlab-helper-portable
+```
+
+Do not run it directly from inside the zip preview. Extract it first.
+
+### Step 2 — Open the extracted folder
+
+Open the extracted folder in File Explorer.
+
+You should see files including:
+- `RUN_WINDOWS_PORTABLE.bat`
+- `setup.bat`
+- `matlab_code_assist_setup.m`
+- `bridge/`
+- `matlab/`
+- `notes/`
+
+### Step 3 — Double-click `RUN_WINDOWS_PORTABLE.bat`
+
+This is the preferred Windows entry point.
+
+What it does automatically:
+1. detects Python 3
+2. creates a local `.venv` inside the extracted folder if needed
+3. installs Python dependencies into that local environment
+4. checks for `ANTHROPIC_API_KEY`
+5. prompts you for the key if `.env` does not already exist
+6. starts the local bridge on port `8765`
+7. verifies `http://127.0.0.1:8765/health`
+8. tries to launch MATLAB in this project folder automatically
+9. tells MATLAB to run `matlab_code_assist_setup(false)`
+
+That makes the folder much more self-contained: the extracted folder carries its own Python environment and startup path.
+
+### Step 4 — If prompted, enter your Claude API key
+
+The launcher will save it to:
+
+```text
+.env
+```
+
+in the extracted project folder.
+
+The expected line is:
+
+```text
+ANTHROPIC_API_KEY=your_key_here
+```
+
+### Step 5 — Let MATLAB open
+
+If MATLAB is found automatically, the launcher will open MATLAB with this project as the current folder and run:
+
+```matlab
+matlab_code_assist_setup(false)
+```
+
+Why `false`?
+Because the Windows launcher has already started the bridge, so MATLAB only needs to add the helper code to the path and run the health check.
+
+### Step 6 — Try a command in MATLAB
+
+Once MATLAB is open, try:
+
+```matlab
+lrn("What is the Laplace transform of a unit step?")
+```
+
+or:
+
+```matlab
+clr
+```
+
+If that works, the portable folder is fully functional.
+
+## If MATLAB does not launch automatically
+
+If `RUN_WINDOWS_PORTABLE.bat` cannot find `matlab.exe`, do this manually:
+
+1. open MATLAB yourself
+2. set MATLAB Current Folder to the extracted project folder
+3. run:
+
+```matlab
+matlab_code_assist_setup(false)
+```
+
+If you did not already run the batch launcher, run:
 
 ```matlab
 matlab_code_assist_setup
 ```
 
-That adds the folder to the MATLAB path, starts the bridge, checks connectivity, and turns on transcript capture.
+That version will try to start the bridge from inside MATLAB.
 
-## Manual Setup
+## Fast manual Windows fallback
 
-1. Open a terminal in this folder.
-2. Sign into Codex if needed.
-3. Start the local bridge.
-4. Open MATLAB desktop in this folder.
-5. Add the folder to the MATLAB path and run the health check.
+If you want to start pieces manually on Windows:
 
-Commands:
-
-```bash
-cd "/path/to/Matlab Helper"
-codex login
-python3 tools/ingest_notes.py
-python3 tools/vision_ingest_notes.py
-python3 bridge/start_bridge.py
-```
-
-On Windows Command Prompt:
+### Start the bridge only
 
 ```bat
-cd C:\path\to\Matlab Helper
-codex login
 bridge\start_bridge.bat
 ```
 
-Optional bridge check:
-
-```bash
-curl http://127.0.0.1:8765/health
-```
-
-In MATLAB:
+### Then in MATLAB
 
 ```matlab
-addpath(pwd)
-matlab_code_assist_start_bridge
-matlab_code_assist_healthcheck
+matlab_code_assist_setup(false)
 ```
 
-That startup also enables Command Window transcript capture, so future `lrn(...)` requests can refer back to past terminal input and output from the same session.
+## Typical usage once running
 
-## Usage
-
-Use directly from the MATLAB Command Window:
+### Study / explanation flow
 
 ```matlab
-lrn(1)
-lrn("1a")
-lrn("part a asks for the Fourier series coefficients")
-lrn("that comes from problem 1a, compare it to what we did there")
-lrn("now use the same problem context to explain the symmetry shortcut")
-lrn(2)
-lrn("start problem 2 and solve the convolution part")
-lrn("write a function that plots a sine wave from 0 to 10 seconds")
-lrn("write a function that computes RMS", "editor")
-lrn("show code for a histogram example", "command")
-lrn("what does it mean for an LTI system to be BIBO stable?")
-lrn("why did my sampling result alias based on what I typed earlier?")
+lrn("What does it mean for an LTI system to be causal?")
+lrn("Explain why this sampling frequency aliases")
+lrn("Compare this to problem 1a")
 ```
 
-This is the recommended terminal-style workflow.
-
-For Command Window questions, the assistant now aims to answer briefly and directly, then use MATLAB only to support the answer when helpful.
-
-Instant failsafe snippet:
-
-```matlab
-clr
-clr("command")
-clr("editor")
-```
-
-`clr(...)` does not call the bridge. It returns one of several prerecorded ~30-line MATLAB snippets immediately.
-
-If you still want to use `help("...")`, the project includes an optional wrapper for that too.
-
-Write into the active editor:
+### Generate code into the editor
 
 ```matlab
 matlab_code_assist("editor")
 ```
 
-Print into the MATLAB Command Window instead:
+### Generate code or text in the Command Window
 
 ```matlab
 matlab_code_assist("command")
 ```
 
-Enable terminal-style queries from the MATLAB Command Window:
+### Terminal-style mode
 
 ```matlab
 matlab_code_assist_terminal_mode("on")
 ```
 
-Then type commands like this directly into the MATLAB Command Window:
+Then you can type lines beginning with `~` in the MATLAB Command Window, though `lrn(...)` is still the more reliable interface.
 
-```matlab
-~write a function that computes RMS
-~plot a sine wave from 0 to 10 seconds
-```
-
-Disable terminal mode with:
+Disable it with:
 
 ```matlab
 matlab_code_assist_terminal_mode("off")
 ```
 
-If no active editor is open, generated code is stored in the base workspace variable `matlabCodeAssistLast`.
+## Notes support
 
-## Notes
+The project can include local notes and use them as prompt context.
 
-- The bridge auto-detects the `codex` binary from common VS Code extension install paths.
-- You can override the binary explicitly:
+Important files:
+- `notes/raw/` — source PDFs
+- `notes/text/` — extracted text
+- `notes/manifest.json` — manifest used by the bridge
+
+If you add or update notes in the source repo, rebuild the manifest before creating the portable zip.
+
+Useful tools:
 
 ```bash
-CODEX_BIN="/full/path/to/codex" python3 bridge/start_bridge.py
+python3 tools/ingest_notes.py
+python3 tools/vision_ingest_notes.py
+python3 tools/build_notes_manifest.py
 ```
 
-- The bridge launcher now works on Windows too through `start_bridge.bat` or `matlab_code_assist_start_bridge`.
-- Runtime logs, transcript files, and Python cache are written to a per-user temp/runtime directory instead of inside the project.
-- To reference past terminal work reliably, keep transcript capture enabled with `matlab_code_assist_enable_context_capture`. This uses MATLAB's built-in `diary` to capture both commands and printed output.
-- Put course PDFs in `notes/raw/` and run `python3 tools/ingest_notes.py` whenever you add or update notes.
-- For handwritten notes, prefer `python3 tools/vision_ingest_notes.py`. This renders note pages to images and uses Codex vision to create cleaner study-note text in `notes/cleaned/`. The `tools/ingest_notes.py` OCR path is optional and may be weaker on non-macOS systems.
-- The bridge now prepends matching excerpts from your local notes corpus, so Signals and Systems questions can be grounded in your stored material.
-- Terminal mode is implemented by polling MATLAB Command History for lines that begin with `~`. Because MATLAB does not expose a documented pre-execution hook for arbitrary Command Window input, you may still briefly see MATLAB's normal syntax error for `~...` before the assistant response is printed.
-- Because MATLAB parses `~...` as MATLAB syntax before user code can intercept it, raw `~prompt` input is not a stable primary interface. Use `lrn("your prompt")` for reliable Command Window use.
-- Recent Command History is included as prompt context, so the assistant can see what you ran recently in the MATLAB Command Window.
-- Recent Command Window transcript is also included when diary capture is on, so the assistant can reason about past code you typed and output MATLAB printed.
-- `lrn(1)`, `lrn("1a")`, `lrn("1b")`, and so on switch the active problem context, and later `lrn("...")` calls stay scoped to that problem until you change it.
-- If you mention a previous labeled problem in a new request, like `problem 1a`, the assistant also pulls the saved history from that earlier problem into context.
-- `lrn(...)` is the preferred interface because it does not interfere with MATLAB's built-in help behavior.
-- `clr(...)` returns one of several prerecorded ~30-line MATLAB snippets immediately.
+## Portable bundle behavior
 
-## Making a Clean Zip
+The Windows portable launcher is intended to make the unzipped folder behave more like an app folder.
 
-To produce a portable bundle from this folder:
+What stays local to the extracted folder:
+- `.venv`
+- `.env`
+- project files
+
+What is still machine-dependent:
+- MATLAB installation
+- Python installation
+- network access for first-time `pip install`
+- your Claude API key
+
+## What changed to improve portability
+
+The portable flow is now more inclusive because:
+- there is a single Windows entry point: `RUN_WINDOWS_PORTABLE.bat`
+- it creates and reuses a folder-local `.venv`
+- `bridge/start_bridge.bat` prefers that local `.venv`
+- MATLAB bridge startup now prefers the local `.venv` too
+- the zip builder excludes unnecessary repo/build/runtime junk
+- the zip extracts into one clean root folder instead of spraying files everywhere
+
+## Troubleshooting
+
+## `RUN_WINDOWS_PORTABLE.bat` says Python is missing
+
+Install Python 3 and make sure one of these works in Command Prompt:
+- `py -3`
+- `python`
+
+Then run the batch file again.
+
+## Dependencies fail to install
+
+Open Command Prompt in the extracted folder and run:
+
+```bat
+.venv\Scripts\python.exe -m pip install -r requirements.txt
+```
+
+If `.venv` does not exist yet, rerun `RUN_WINDOWS_PORTABLE.bat`.
+
+## Bridge does not respond on port 8765
+
+The launcher prints the bridge log path. You can also start it manually:
+
+```bat
+bridge\start_bridge.bat
+```
+
+Then test in a browser or terminal:
+
+```text
+http://127.0.0.1:8765/health
+```
+
+You should get JSON containing `"ok": true`.
+
+## MATLAB opens but the helper commands are undefined
+
+Make sure MATLAB Current Folder is the extracted project root, then run:
+
+```matlab
+matlab_code_assist_setup(false)
+```
+
+## The API key was not saved
+
+Create `.env` manually in the project root with:
+
+```text
+ANTHROPIC_API_KEY=your_key_here
+```
+
+Then rerun:
+
+```bat
+RUN_WINDOWS_PORTABLE.bat
+```
+
+## Build the portable zip again
+
+Whenever you want a fresh distributable bundle from the source repo:
 
 ```bash
-cd "/path/to/Matlab Helper"
 python3 tools/make_portable_bundle.py
 ```
 
-That writes a clean zip to `dist/matlab-code-assist-portable.zip` and excludes runtime clutter such as `__pycache__`, logs, and rendered note pages.
+The output zip will be written to:
 
-## Next Improvements
+```text
+dist/claude-matlab-helper-portable.zip
+```
 
-- Add a MATLAB toolbar button for one-click launch.
-- Add a docked MATLAB app UI instead of `inputdlg`.
-- Support “replace selection” in addition to replacing the full active editor buffer.
-- Replace Command History polling with a cleaner pre-execution hook if we find a stable desktop API for it.
-# Claude-Matlab-Helper
+## Recommended Windows portable workflow summary
+
+If you only remember one flow, use this:
+
+1. build the zip with `python3 tools/make_portable_bundle.py`
+2. move the zip to the Windows machine
+3. extract it
+4. double-click `RUN_WINDOWS_PORTABLE.bat`
+5. enter `ANTHROPIC_API_KEY` if prompted
+6. let MATLAB open
+7. run `lrn("...")`
+
+That is the intended portable workflow for this repo.
