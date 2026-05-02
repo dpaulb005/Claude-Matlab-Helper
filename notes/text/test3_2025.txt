@@ -1,0 +1,96 @@
+Lagoa Spring 2025
+EE 350
+Test 3
+Closed Book, Closed Notes, 3 Sheets 8- in x 11 in
+Write Clearly and Fully Justify Your Answers
+
+Question 1 (30%): Consider the periodic real signal
+f(t) =
++∞X
+n=−∞
+Dnej2nt
+where
+D0 = 1 and Dn = 1
+n ej(n2+1/2)π for n ≥ 1.
+a) (10%) Determine the value of Dn for n ≤ −1.
+b) (10%) Is the signal f(t) even, odd or neither? Fully justify your answer
+c) (10%) Now consider the block diagram below
+Hf(t) y(t)
+where the system H has impulse response whose Fourier transform is
+H(ω) = rect(ω/14)e−j3ω
+Determine the power Py of the output y(t).
+
+Question 2 (30%): Here we consider the problem of sampling and recovering audio signals.
+The different parts consider different steps need to analyze when we can recover a signal after
+it has been sampled.
+As part of this, define the periodic signal (with period T0)
+δT0(t) =
++∞X
+n=−∞
+δ(t − nT0)
+a) (10%) Compute the exponential Fourier series of δT0(t) and use it to compute its Fourier
+transform. Compare the results with the one provided in the Fourier transform table.
+b) (10%) Now consider an audio signal f(t). Define the sampled signal fsampled(t) as the
+multiplication of the two signals
+fsampled(t) = f(t)δT0(t)
+Compute the Fourier transform of fsampled(t) as a function of the Fourier transform of
+f(t) (which we usually denote as F (ω)).
+c) (10%) Audio signals have a bandwidth of 20 kHz; i.e., we have
+F (ω) = 0 when |ω| ≥ 4 × 104π rad/s
+Let fsampled(t) be as in part (b). One can argue (from the properties of δ(t)) that it has
+the form
+fsampled(t) =
++∞X
+n=−∞
+f(nT0)δ(t − nT0)
+in other words it only contains information on the signal f(t) at the sampling instants
+0, ±T0, ±2T0, ... So, fsampled(t) can be thought as a mathematical representation of the
+sampling procedure used to produce digital signals that can be stored and used in digital
+devices.
+Now, we want to be able to recuperatef(t) from its samples fsampled(t). Using a reasoning
+based on Fourier transform, compute the all the values of T0 that allow for the one to
+completely recover f(t) and explain how we can recover f(t) by filtering fsampled(t) with
+a suitable filter.
+Hint: Sketch the Fourier transform of fsampled(t) as a function of F (ω) and use the fact
+that F (ω) is band limited at 4 × 104π rad/s.
+
+Question 3 (30%): In this problem, we aim at designing controllers that are able to follow
+constant reference signals with zero steady state error.
+Consider the following closed loop system
+HC+
+-r(t)
+e(t)
+f(t) y(t)
+where H is a system described by the differential equation
+dy
+dt + 2y(t) = 3f(t)
+and the controller C has transfer function
+C(ω) = 1
+jω + a
+where a ≥ 0 is the controller parameter to be designed.
+a) (10%) Compute the transfer function of the closed loop
+Hcl(ω) = E(ω)
+R(ω)
+and the differential equation that describes the relation between r(t) and e(t).
+b) (10%) Compute the modes of the system as a function of a and argue that the closed
+loop system is BIBO stable for all a ≥ 0.
+If you did not do part (a) use
+Hcl(ω) = (jω + a)(jω + 5)
+(jω + a)(jω + 5) + 4
+c) (10%) Now consider input
+r(t) = β
+where β is a constant. Determine the value of a leading to steady state value of e(t)
+ess(t) = 0.
+
+In other words, find the value of a for which the steady state of the output y(t) is equal
+to the input when the input is constant.
+If you did not do part (a) use
+Hcl(ω) = (jω + a)(jω + 5)
+(jω + a)(jω + 5) + 4
+Question 4 (10%): Consider
+Hf(t) y(t)
+and assume that
+i) The signal f(t) is periodic
+ii) The transfer function of the system H satisfies |H(ω)| ≤ 1 for all ω.
+Is Py ≤ Pf? If YES, prove this. If NO, provide an example of a system H and a signal f(t)
+where this does not hold.

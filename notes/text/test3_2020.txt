@@ -1,0 +1,84 @@
+Lagoa Spring 2020
+EE 350
+Test 3
+Instructions: This is a Take Home Test, based on the honor system. You can use any
+reference material that you want, but you should work alone. Consulting with your
+classmates or any other individual is not allowed and will be considering cheating. In that
+case no points will be given for the whole exam. If you have any questions regarding the
+test, please consult only with me or any of the TAs. Show all your work but try to be as
+concise as possible.
+This Test is Due on or Before Thursday, April 9th, 10:30 pm.
+No exceptions.
+Submit a single pdf ﬁle on Canvas with your answers (and Matlab code if any)
+Fully Justify your answers.
+
+Question 1 (30%):
+a) Consider the periodic signal
+y(t) = sin(2t + π
+4 ) sin(t + π
+3 ) + 2 cos2(2t).
+i) (10%) Specify the numeric value of the compact Fourier series parameters Co, Cn,
+and θn.
+ii) (8%) Using your results from part (a), determine the numeric values of the trigono-
+metric Fourier series parameters ao, an, and bn.
+b) (12%) Let x(t) is the signal depicted below which is periodic with period T0.
+x(t)
+4
+T0/4-T0/4 T0-T0
+· · · · · ·
+Find the exponential Fourier series of x(t)
+
+Question 2 (35%): The unit step response of an LTI system is:
+y(t) = (−e−2t + 1)u(t)
+a) (12%) Determine the ordinary diﬀerential equations that describes the system.
+b) (11%) What is the input f(t) if the zero-state response yzs(t) = (2e−t − 2e−2t)u(t).
+Hint: If you have not done part (a), use diﬀerential equation
+dy
+dt + 2y(t) = 10f(t).
+c) (12%) Now consider an LTI system with the impulse response representation h(t)
+h(t) = (t − 3)2
+2 e−2(t−3)u(t − 3).
+Let the input to the system is given by
+f(t) = 1
+2πej4t.
+Using an appropriate transform pair and property from the table provided, determine the
+Fourier transform of the ouput y(t)?
+
+Question 3 (35%): Throughout this question we aim at developing an easier way of
+implementing AM modulation.
+a) (10%) Let m(t) be the message to be sent and let
+ymod(t) =m(t) cos(ωct)
+Determine the Fourier transform ofymod(t) as a function of the Fourier transform ofm(t).
+b) (10%) Let x(t) be the signal in part 1-b). Find the Fourier transform of x(t).
+If you have not done part 1-b) take
+Dn = 3sin
+(nπ
+3
+)
+nπ
+c) (15%) Because analog multiplication is diﬃcult to implement over a wide dynamical
+range, in AM modulation sometimes the switching scheme below is used to obtain the
+modulated signal.
+Bandpass Filterm(t)
+x(t)
+y(t) z(t)
+switch
+where x(t) is the signal in part (b), T0 = 2π
+ωc
+and
+y(t) =m(t)x(t).
+Design the ideal bandpass ﬁlter above so that
+z(t) =ymod(t)
+where ymod(t) is the signal deﬁned in part (a).
+If you have not done part (b) take
+x(t) =
++∞∑
+n=−∞
+Dnejnω0t where ω0 = 2π
+T0
+.
+Dn = 3sin
+(nπ
+3
+)
+nπ

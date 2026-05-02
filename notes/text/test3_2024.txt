@@ -1,0 +1,143 @@
+Lagoa Spring 2024
+EE 350
+Test 3
+Closed Book, Closed Notes, 3 Sheets 8- in x 11 in
+Write Clearly and Fully Justify Your Answers
+
+Question 1 (30%):
+a) (8%) The complex Fourier series of a function f(t) of period T0 = 2π/ω0 is of the form
+f(t) =
+n=∞X
+n=−∞
+Dnejnω0.
+Consider a real periodic function f(t) with period T0 = 2π. The only nonzero coefficients
+of the complex Fourier series for n ≥ 0 are D1 = 3j, D3 = −10j and D5 = j. Determine
+Dn for n < 0.
+b) (7%) Is the function even, odd or neither. Justify your answer.
+If you have not done part a) useD1 = 3+ j, D−1 = 3−j, D2 = −10+2 j, D−2 = −10−2j,
+D3 = D−3 = 1 and Dn = 0 for the remainder values of n.
+c) (7%) Determine the coefficients of the compact trigonometric series of f(t); i.e., determine
+Cn and θn such that
+f(t) = C0 +
+∞X
+n=1
+Cn cos(nω0 + θn).
+If you have not done part a) useD1 = 3+ j, D−1 = 3−j, D2 = −10+2 j, D−2 = −10−2j,
+D3 = D−3 = 1 and Dn = 0 for the remainder values of n.
+d) (8%) Assume that a signal f(t) of the form
+f(t) =
+n=∞X
+n=−∞
+Dnejnω0.
+is filtered using a filter whose frequency response is given in the next page.
+Hf(t) y(t)
+Let
+ Pf be the power of the signal f(t)
+ Py be the power of the signal y(t)
+Is Pf ≥ Py, Pf ≤ Py or neither? Fully justify your answer.
+
+Magnitude of H(o))
+angle of H(o))
+
+Question 2 (35%):
+Consider a system with an impulse response whose plot of its Fourier Transform is given in
+the next page.
+a) (9%) Assume that the impulse response of the system is of the form
+h(t) = αe−βtu(t)
+As mentioned above, the plot of the Fourier transform of h(t) (denoted by H(ω)) is given
+in the next page. Determine the values of α and β.
+b) (9%) Determine the response of the system to the input
+f(t) = 2e−10tu(t − 1).
+If you have not done part a) assume that the Fourier transform of the impulse response
+of the system is
+H(ω) = 1
+jω + 10.
+c) (8%) Determine the differential equation that describes the system.
+If you have not done part a) assume that the Fourier transform of the impulse response
+of the system is
+H(ω) = 1
+jω + 10.
+d) (9%) Consider the closed–loop system below
+K System
+H+ -
+f(t) y(t)
+where System H is the one in part a) and K is a constant gain. When the input to the
+closed loop system is
+f(t) = 2
+√
+2 cos(2t + π/2)
+one obtains the following steady state output
+ySS(t) = cos(2t + π/4).
+What is the value of K?
+
+Magnitude of H(o))
+10
+15
+20
+25
+30
+35
+40
+angle of H(o))
+-7t/4
+10
+15
+20
+25
+30
+35
+40
+
+Question 3 (35%): Throughout this question x(t) is the signal depicted below which is
+periodic with period T0.
+x(t)
+4
+T0/4-T0/4 T0-T0
+· · · · · ·
+a) (9%) Find the complex Fourier series of the signal x(t).
+b) (8%) Denoting by Dn the coefficients of the complex Fourier series computed above, recall
+that we have
+x(t) =
++∞X
+n=−∞
+Dnejnω0t where ω0 = 2π
+T0
+.
+Find the Fourier transform of x(t).
+If you have not done part a) take
+Dn = 3sin
+ nπ
+3
+
+nπ
+c) (9%) Because analog multiplication is difficult to implement over a wide dynamical range,
+in AM modulation sometimes the switching scheme below is used to obtain the modulated
+signal.
+Bandpass Filterm(t)
+x(t)
+y(t) z(t)
+switch
+where x(t) is the signal above, T0 = 2π
+ωc
+and
+y(t) = m(t)x(t).
+
+Find the Fourier transform of y(t) as a function of the Fourier transform of m(t).
+If you have not done part a) take
+Dn = 3sin
+ nπ
+3
+
+nπ
+for x(t).
+d) (9%) Design the ideal bandpass filter above so that
+z(t) = Km(t) cos(ωct)
+where K is a constant. Assume that the bandwidth of the signal m(t) is much smaller
+than ωc.
+If you have not done part a) take
+Dn = 3sin
+ nπ
+3
+
+nπ
+for x(t).
