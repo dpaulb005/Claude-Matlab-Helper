@@ -38,16 +38,39 @@ After setup, the most important commands are:
 
 - `matlab_code_assist_setup` — bootstrap the project inside MATLAB
 - `lrn("your prompt")` — preferred study / question interface
+- `lrn("mode sampling exam verify")` — set active topic/response behavior
+- `lrn("show mode")` / `lrn("clear mode")` — inspect or reset the active mode
 - `clr` — instant prerecorded MATLAB snippet
 - `matlab_code_assist("editor")` — generate code into the current editor
 - `matlab_code_assist("command")` — print the response in the Command Window
+- `matlab_code_assist_plot_convolution(t, x, h)` — visualize convolution step-by-step
+- `matlab_code_assist_sampling_demo(f_signal, fs, duration)` — visualize sampling and aliasing
+- `matlab_code_assist_system_summary('num', num, 'den', den)` — pole-zero map, BIBO stability, impulse response
+- `matlab_code_assist_fourier_demo('Waveform', 'square', 'N', 10)` — Fourier series reconstruction explorer
 
 Examples:
 
 ```matlab
 lrn("What does BIBO stability mean?")
 lrn("Explain convolution intuitively")
+lrn("mode convolution derivation verify")
+lrn("show mode")
 lrn("write a function that computes RMS", "editor")
+
+% Wave 2: visual helpers
+t = 0:0.01:1;
+x = double(t >= 0 & t <= 0.5);
+h = double(t >= 0 & t <= 0.3);
+matlab_code_assist_plot_convolution(t, x, h)
+
+matlab_code_assist_sampling_demo(5, 8, 1)   % aliasing: fs < 2*f_signal
+matlab_code_assist_sampling_demo(5, 50, 1)  % clean: fs >> 2*f_signal
+
+% Wave 3: system summary + Fourier + incognito mode
+matlab_code_assist_system_summary('num', [1], 'den', [1 3 2])  % stable system
+matlab_code_assist_fourier_demo('Waveform', 'square', 'N', 15, 'T', 1)
+lrn("mode incognito")       % all answers now look like MATLAB .m files
+lrn("mode noincognito")     % back to normal prose answers
 clr
 ```
 
@@ -86,6 +109,15 @@ From `requirements.txt`:
 - `anthropic`
 - `pymupdf`
 - `pypdf`
+
+## Dev/test setup
+
+If you want to run the Python test suite locally:
+
+```bash
+python3 -m pip install -r requirements-dev.txt
+python3 -m pytest tests -q
+```
 
 ## Windows portable: step-by-step
 

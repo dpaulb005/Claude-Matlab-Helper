@@ -14,6 +14,7 @@ end
 
 snapshot = matlab_code_assist_snapshot();
 snapshot.target = target;
+snapshot.requestOptions = matlab_code_assist_request_options(requestText, target);
 response = matlab_code_assist_generate(snapshot, string(requestText));
 code = string(response.code);
 
