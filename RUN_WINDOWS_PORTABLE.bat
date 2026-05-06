@@ -118,14 +118,13 @@ if exist "%ROOT%\.env" (
 
 echo [INFO] No API key found yet.
 echo Get your Claude API key from: https://console.anthropic.com/
-for /f "usebackq delims=" %%K in (`powershell -NoProfile -Command "$k = Read-Host 'Enter ANTHROPIC_API_KEY' -AsSecureString; [System.Runtime.InteropServices.Marshal]::PtrToStringAuto([System.Runtime.InteropServices.Marshal]::SecureStringToBSTR($k))"`) do (
-    set "ENTERED_KEY=%%K"
-)
+set /p "ENTERED_KEY=Enter ANTHROPIC_API_KEY: "
 if not defined ENTERED_KEY (
     echo [FAIL] No API key entered.
     exit /b 1
 )
 > "%ROOT%\.env" echo ANTHROPIC_API_KEY=!ENTERED_KEY!
+set "ANTHROPIC_API_KEY=!ENTERED_KEY!"
 echo [OK] Saved ANTHROPIC_API_KEY to .env
 exit /b 0
 
