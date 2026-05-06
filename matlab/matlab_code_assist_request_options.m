@@ -1,5 +1,5 @@
 function options = matlab_code_assist_request_options(requestText, target)
-%MATLAB_CODE_ASSIST_REQUEST_OPTIONS Build request options sent to the Python bridge.
+%MATLAB_CODE_ASSIST_REQUEST_OPTIONS Build request options for the local Python helper.
 
 if nargin < 1 %#ok<INUSD>
     requestText = "";

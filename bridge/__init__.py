@@ -1,1 +1,1 @@
-"""Helper package for Claude-MATLAB bridge modules."""
+"""Helper package for Claude MATLAB Helper direct-mode modules."""

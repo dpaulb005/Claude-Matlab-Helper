@@ -1,25 +1,41 @@
 function ok = matlab_code_assist_healthcheck()
-%MATLAB_CODE_ASSIST_HEALTHCHECK Verify the local Codex bridge is reachable.
+%MATLAB_CODE_ASSIST_HEALTHCHECK Verify the direct local Claude helper is usable.
 
-import matlab.net.URI
-import matlab.net.http.RequestMessage
-import matlab.net.http.RequestMethod
+runtimeDir = matlab_code_assist_runtime_dir();
+responsePath = fullfile(runtimeDir, sprintf("claude-health-%s.json", char(java.util.UUID.randomUUID())));
+cleanup = onCleanup(@() localCleanupFile(responsePath)); %#ok<NASGU>
 
-try
-    uri = URI("http://127.0.0.1:8765/health");
-    response = RequestMessage(RequestMethod.GET).send(uri);
-catch err
+scriptPath = fullfile(matlab_code_assist_project_root(), "bridge", "run_claude_request.py");
+command = matlab_code_assist_python_command(scriptPath, ...
+    "--healthcheck", ...
+    "--output", responsePath);
+
+[status, output] = system(command);
+
+if ~isfile(responsePath)
     error("matlab_code_assist_healthcheck:Unavailable", ...
-        "The local bridge is not running on http://127.0.0.1:8765. Start it with matlab_code_assist_start_bridge, bridge/start_bridge.py, bridge/start_bridge.sh, or bridge/start_bridge.bat. Original error: %s", ...
-        err.message);
+        "Direct Python helper did not produce a healthcheck response. Shell output: %s", strtrim(output));
 end
 
-ok = response.StatusCode == matlab.net.http.StatusCode.OK;
+response = jsondecode(fileread(responsePath));
+ok = status == 0 && isfield(response, "ok") && response.ok;
 
 if ok
-    disp("MATLAB Code Assist bridge is reachable.");
+    disp("MATLAB Code Assist direct mode is ready.");
+    return;
+end
+
+if isfield(response, "error")
+    detail = string(response.error);
 else
-    error("matlab_code_assist_healthcheck:Unavailable", ...
-        "Bridge returned status %s.", string(response.StatusCode));
+    detail = string(strtrim(output));
+end
+
+error("matlab_code_assist_healthcheck:Unavailable", "%s", detail);
+end
+
+function localCleanupFile(path)
+if isfile(path)
+    delete(path);
 end
 end

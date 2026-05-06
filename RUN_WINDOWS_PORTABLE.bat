@@ -6,7 +6,7 @@ if "%ROOT:~-1%"=="\" set "ROOT=%ROOT:~0,-1%"
 
 set "VENV_DIR=%ROOT%\.venv"
 set "VENV_PY=%VENV_DIR%\Scripts\python.exe"
-set "BRIDGE_LOG=%TEMP%\claude-matlab-helper-bridge.log"
+set "HEALTHCHECK_JSON=%TEMP%\claude-matlab-helper-health.json"
 set "LAUNCH_MATLAB=1"
 if /I "%~1"=="--no-matlab" set "LAUNCH_MATLAB=0"
 
@@ -30,10 +30,6 @@ if errorlevel 1 goto :fail
 call :ensure_env_key
 if errorlevel 1 goto :fail
 
-call :stop_existing_bridge
-call :start_bridge
-if errorlevel 1 goto :fail
-
 call :healthcheck
 if errorlevel 1 goto :fail
 
@@ -46,25 +42,16 @@ if "%LAUNCH_MATLAB%"=="1" (
 echo.
 echo =============================================
 echo   Portable launcher finished successfully
-
 echo =============================================
 echo.
 echo If MATLAB did not open automatically:
-
 echo   1. Open MATLAB manually
-
 echo   2. Set Current Folder to:
-
 echo      %ROOT%
-
 echo   3. Run:
-
-echo      matlab_code_assist_setup(false)
-
+echo      matlab_code_assist_setup
 echo   4. Try:
-
 echo      lrn("What is the Laplace transform of a unit step?")
-
 echo.
 pause
 exit /b 0
@@ -139,32 +126,18 @@ if not defined ENTERED_KEY (
     exit /b 1
 )
 > "%ROOT%\.env" echo ANTHROPIC_API_KEY=!ENTERED_KEY!
-set "ANTHROPIC_API_KEY=!ENTERED_KEY!"
 echo [OK] Saved ANTHROPIC_API_KEY to .env
 exit /b 0
 
-:stop_existing_bridge
-for /f "tokens=5" %%P in ('netstat -aon 2^>nul ^| findstr /r /c:":8765 .*LISTENING"') do (
-    taskkill /f /pid %%P >nul 2>&1
-)
-exit /b 0
-
-:start_bridge
-echo [INFO] Starting local bridge...
-start "Claude MATLAB Helper Bridge" /min cmd /c ""%VENV_PY%" "%ROOT%\bridge\start_bridge.py" > "%BRIDGE_LOG%" 2>&1"
-timeout /t 3 /nobreak >nul
-exit /b 0
-
 :healthcheck
-echo [INFO] Checking bridge health...
-"%VENV_PY%" -c "import json, sys, urllib.request; data=json.loads(urllib.request.urlopen('http://127.0.0.1:8765/health', timeout=5).read().decode()); sys.exit(0 if data.get('ok') else 1)" >nul 2>&1
+echo [INFO] Running direct-mode healthcheck...
+"%VENV_PY%" "%ROOT%\bridge\run_claude_request.py" --healthcheck --output "%HEALTHCHECK_JSON%" >nul 2>&1
 if errorlevel 1 (
-    echo [FAIL] Bridge did not respond on http://127.0.0.1:8765/health
-    echo Bridge log: %BRIDGE_LOG%
-    if exist "%BRIDGE_LOG%" type "%BRIDGE_LOG%"
+    echo [FAIL] Direct-mode healthcheck failed.
+    if exist "%HEALTHCHECK_JSON%" type "%HEALTHCHECK_JSON%"
     exit /b 1
 )
-echo [OK] Bridge is running.
+echo [OK] Direct local Claude helper is ready.
 exit /b 0
 
 :launch_matlab
@@ -183,14 +156,14 @@ if not defined MATLAB_EXE (
 )
 
 echo [INFO] Launching MATLAB...
-start "MATLAB" "%MATLAB_EXE%" -sd "%ROOT%" -r "try, matlab_code_assist_setup(false); catch ME, disp(getReport(ME,'extended')); end"
+start "MATLAB" "%MATLAB_EXE%" -sd "%ROOT%" -r "try, matlab_code_assist_setup; catch ME, disp(getReport(ME,'extended')); end"
 echo [OK] MATLAB launch requested.
 exit /b 0
 
 :fail
 echo.
 echo Portable startup failed.
-echo If a bridge log exists, check: %BRIDGE_LOG%
+if exist "%HEALTHCHECK_JSON%" type "%HEALTHCHECK_JSON%"
 echo.
 pause
 exit /b 1
