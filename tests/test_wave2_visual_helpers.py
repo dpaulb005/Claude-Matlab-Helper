@@ -51,3 +51,19 @@ def test_visual_helpers_listed_in_user_message():
     msg = build_user_message(payload, "(no notes)")
 
     assert "convolution" in msg.lower()
+
+
+def test_workspace_summary_is_included_in_user_message():
+    from bridge.prompt_templates import build_user_message
+
+    payload = {
+        "request": "Use the variables already defined",
+        "requestOptions": {"topicMode": "general", "modeSource": "explicit"},
+        "workspaceSummary": "- x (double 1x3)\n  value: [1 2 3]\n- eqn (sym 1x1)\n  value: x^2 + 1 == 0",
+        "target": "command",
+    }
+    msg = build_user_message(payload, "(no notes)")
+
+    assert "workspace" in msg.lower()
+    assert "x (double 1x3)" in msg
+    assert "x^2 + 1 == 0" in msg

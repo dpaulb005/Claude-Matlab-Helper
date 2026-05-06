@@ -169,6 +169,7 @@ def build_user_message(payload: dict[str, Any], notes_context: str) -> str:
     file_code = editor.get("code") or ""
     selected_code = editor.get("selectedCode") or ""
     command_window = payload.get("commandWindow") or ""
+    workspace_summary = payload.get("workspaceSummary") or ""
     problem_label = payload.get("problemLabel")
     problem_context = payload.get("problemContext") or ""
     request = payload.get("request") or ""
@@ -197,6 +198,9 @@ def build_user_message(payload: dict[str, Any], notes_context: str) -> str:
         "",
         "Current file contents:",
         file_code or "(empty file)",
+        "",
+        "Current base workspace summary:",
+        workspace_summary or "(no workspace variables captured)",
         "",
         "Recent Command Window context:",
         command_window or "(unavailable)",
